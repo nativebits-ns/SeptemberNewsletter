@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>September Dispatch — Apple Platforms, WWDC 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbfaf8;
+    --bg-raised: #ffffff;
+    --bg-inset: #f1efeb;
+    --line: #ddd9d1;
+    --line-soft: #e8e5df;
+    --text: #23211d;
+    --text-dim: #625d54;
+    --text-faint: #928c80;
+    --swift: #d6431f;
+    --swift-dim: #f1c3b3;
+    --vision: #227b73;
+    --vision-dim: #bfe0dc;
+    --amber: #a56a1a;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--swift); color: #fff; }
+
+  a { color: var(--swift); text-decoration: none; border-bottom: 1px solid var(--swift-dim); }
+  a:hover { border-bottom-color: var(--swift); }
+
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- top progress rail ---------- */
+  #progress {
+    position: fixed; top: 0; left: 0;
+    height: 3px; width: 0%;
+    background: var(--swift);
+    z-index: 200;
+    transition: width 0.1s linear;
+  }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(251,250,248,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .nav-inner {
+    max-width: 720px; margin: 0 auto; padding: 14px 24px;
+    display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-group { display: flex; gap: 4px; align-items: center; }
+  .nav-divider {
+    width: 1px; height: 16px; background: var(--line);
+    margin: 0 6px; flex-shrink: 0;
+  }
+  .nav-btn {
+    font-family: var(--mono); font-size: 12.5px;
+    color: var(--text-faint); background: none;
+    border: 1px solid transparent; border-radius: 5px;
+    padding: 6px 10px; white-space: nowrap; cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .nav-btn:hover { color: var(--text-dim); }
+  .nav-btn.active { color: var(--swift); border-color: var(--swift-dim); }
+
+  /* ---------- hero ---------- */
+  header.hero { padding: 88px 24px 56px; max-width: 760px; margin: 0 auto; position: relative; }
+  .kicker { font-family: var(--mono); font-size: 13px; color: var(--vision); margin: 0 0 18px; letter-spacing: 0.01em; }
+  h1.headline {
+    font-family: var(--mono); font-weight: 600;
+    font-size: clamp(32px, 6vw, 50px); line-height: 1.12; letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  .headline .accent { color: var(--swift); }
+  .dek { font-size: 17px; color: var(--text-dim); max-width: 56ch; margin: 0 0 28px; }
+  .hero-meta { display: flex; gap: 18px; flex-wrap: wrap; font-family: var(--mono); font-size: 12px; color: var(--text-faint); }
+  .hero-meta span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--swift); display: inline-block; }
+
+  /* ---------- issue-at-a-glance timeline ---------- */
+  #timeline-canvas { margin-top: 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-inset); padding: 20px; }
+  .timeline-row { display: flex; align-items: center; gap: 14px; font-family: var(--mono); font-size: 12.5px; }
+  .timeline-track { position: relative; flex: 1; height: 3px; background: var(--line); border-radius: 2px; }
+  .timeline-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--swift); border-radius: 2px; width: 8%; }
+  .timeline-node {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--bg-inset); border: 2px solid var(--text-faint);
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .timeline-node.hit { border-color: var(--swift); background: var(--swift); }
+  .timeline-label { font-family: var(--mono); font-size: 11px; color: var(--text-faint); display: flex; justify-content: space-between; margin-top: 10px; }
+  .timeline-caption { margin-top: 14px; font-size: 13px; color: var(--text-dim); min-height: 20px; }
+
+  /* ---------- part dividers (Features / Tech) ---------- */
+  .part-divider {
+    max-width: 760px; margin: 0 auto; padding: 60px 24px 0;
+  }
+  .part-divider .part-label {
+    font-family: var(--mono); font-size: 12px; color: var(--text-faint);
+    display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+  }
+  .part-divider .part-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+  .part-divider h2.part-title {
+    font-family: var(--mono); font-weight: 700;
+    font-size: clamp(26px, 4.5vw, 34px); margin: 0 0 8px; letter-spacing: -0.01em;
+  }
+  .part-divider .part-sub { color: var(--text-dim); font-size: 15px; max-width: 60ch; margin: 0; }
+
+  /* ---------- sections ---------- */
+  section { max-width: 760px; margin: 0 auto; padding: 48px 24px; border-top: 1px solid var(--line-soft); }
+  .part-divider + section { border-top: none; padding-top: 32px; }
+
+  .section-eyebrow { font-family: var(--mono); font-size: 12px; color: var(--text-faint); margin: 0 0 10px; }
+  h2 { font-family: var(--mono); font-size: clamp(22px, 4vw, 27px); font-weight: 600; line-height: 1.25; margin: 0 0 18px; letter-spacing: -0.005em; }
+  h3 { font-family: var(--sans); font-weight: 700; font-size: 17px; margin: 32px 0 10px; display: flex; align-items: baseline; gap: 10px; }
+  h3 .tag {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 500; color: var(--vision);
+    border: 1px solid var(--vision-dim); border-radius: 4px; padding: 2px 6px; white-space: nowrap;
+  }
+  p { margin: 0 0 16px; color: var(--text); max-width: 66ch; }
+  p.dim { color: var(--text-dim); }
+  ul, ol { margin: 0 0 16px; padding-left: 22px; max-width: 64ch; }
+  li { margin-bottom: 8px; }
+  strong { color: #0f0d0a; font-weight: 600; }
+
+  /* ---------- expandable disclosure ---------- */
+  .disclosure { border: 1px solid var(--line); border-radius: 8px; margin: 20px 0; background: var(--bg-raised); overflow: hidden; }
+  .disclosure summary {
+    list-style: none; cursor: pointer; padding: 14px 18px;
+    display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 14.5px;
+  }
+  .disclosure summary::-webkit-details-marker { display: none; }
+  .disclosure summary .chev { font-family: var(--mono); color: var(--text-faint); transition: transform 0.2s ease; font-size: 13px; }
+  .disclosure[open] summary .chev { transform: rotate(90deg); }
+  .disclosure .body { padding: 0 18px 18px; color: var(--text-dim); font-size: 14.5px; }
+  .disclosure .body p:last-child { margin-bottom: 0; }
+
+  /* ---------- code blocks ---------- */
+  .code-card { background: var(--bg-inset); border: 1px solid var(--line); border-radius: 8px; margin: 18px 0; overflow: hidden; }
+  .code-head { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; border-bottom: 1px solid var(--line-soft); font-family: var(--mono); font-size: 11.5px; color: var(--text-faint); }
+  .copy-btn {
+    background: none; border: 1px solid var(--line); color: var(--text-faint);
+    font-family: var(--mono); font-size: 11px; border-radius: 4px; padding: 3px 9px; cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--text-faint); }
+  .copy-btn.copied { color: var(--swift); border-color: var(--swift-dim); }
+  pre { margin: 0; padding: 16px 18px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.65; }
+  code { font-family: var(--mono); }
+  .tok-kw { color: #a15d1f; }
+  .tok-type { color: var(--vision); }
+  .tok-str { color: #4a7d3a; }
+  .tok-com { color: var(--text-faint); font-style: italic; }
+  .tok-fn { color: #2a63a8; }
+  .tok-mod { color: var(--swift); }
+
+  /* ---------- module selector demo ---------- */
+  .selector-demo { background: var(--bg-inset); border: 1px solid var(--line); border-radius: 8px; padding: 18px; margin: 18px 0; }
+  .selector-buttons { display: flex; gap: 8px; margin-bottom: 14px; }
+  .sel-btn { font-family: var(--mono); font-size: 12px; background: var(--bg-raised); border: 1px solid var(--line); color: var(--text-dim); padding: 6px 12px; border-radius: 5px; cursor: pointer; }
+  .sel-btn.active { border-color: var(--vision); color: var(--vision); }
+  .selector-output { font-family: var(--mono); font-size: 13px; color: var(--text-dim); padding-top: 10px; border-top: 1px solid var(--line-soft); min-height: 22px; }
+  .selector-output .val { color: var(--amber); }
+
+  /* ---------- feature grid / cards ---------- */
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+  @media (max-width: 560px) { .feature-grid { grid-template-columns: 1fr; } }
+  .feature-card { border: 1px solid var(--line); border-radius: 8px; padding: 16px; background: var(--bg-raised); }
+  .feature-card h4 { font-family: var(--sans); font-size: 14px; font-weight: 700; margin: 0 0 6px; }
+  .feature-card p { font-size: 13.5px; color: var(--text-dim); margin: 0; max-width: none; }
+
+  /* ---------- breaking changes checklist ---------- */
+  .checklist { border: 1px solid var(--amber); border-radius: 8px; background: rgba(165,106,26,0.06); padding: 18px 20px; margin: 20px 0; }
+  .checklist-title { font-family: var(--mono); font-size: 12.5px; color: var(--amber); margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  .check-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid rgba(165,106,26,0.15); cursor: pointer; user-select: none; }
+  .check-item:first-of-type { border-top: none; }
+  .checkbox {
+    width: 16px; height: 16px; border: 1.5px solid var(--text-faint); border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+    display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, background 0.15s;
+  }
+  .checkbox.done { background: var(--amber); border-color: var(--amber); }
+  .checkbox.done::after { content: '✓'; font-size: 11px; color: #fff; font-weight: 700; }
+  .check-text { font-size: 14px; color: var(--text-dim); transition: color 0.15s; }
+  .check-item.done .check-text { color: var(--text-faint); text-decoration: line-through; }
+  .check-progress { font-family: var(--mono); font-size: 11px; color: var(--text-faint); margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(165,106,26,0.15); }
+
+  /* ---------- further reading ---------- */
+  .read-item {
+    display: block; border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; margin-bottom: 12px;
+    background: var(--bg-raised); transition: border-color 0.15s;
+  }
+  .read-item:hover { border-color: var(--text-faint); }
+  .read-item .rt { font-family: var(--sans); font-weight: 700; font-size: 14.5px; margin-bottom: 6px; display: block; color: var(--text); }
+  .read-item .rd { font-size: 13px; color: var(--text-dim); }
+
+  /* ---------- footer ---------- */
+  footer {
+    max-width: 760px; margin: 0 auto; padding: 48px 24px 90px; border-top: 1px solid var(--line-soft);
+    font-family: var(--mono); font-size: 12px; color: var(--text-faint);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav>
+  <div class="nav-inner" id="navInner">
+    <div class="nav-group">
+      <button class="nav-btn" data-target="os27">Siri &amp; OS 27</button>
+      <button class="nav-btn" data-target="vision">visionOS</button>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-group">
+      <button class="nav-btn" data-target="devframeworks">Frameworks</button>
+      <button class="nav-btn" data-target="xcode">Xcode 27</button>
+      <button class="nav-btn" data-target="swift">Swift 6.3</button>
+      <button class="nav-btn" data-target="breaking">Breaking changes</button>
+    </div>
+    <div class="nav-divider"></div>
+    <button class="nav-btn" data-target="reading">Further reading</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <p class="kicker">// dev newsletter — September 2026 issue</p>
+  <h1 class="headline">What Apple shipped<br>this <span class="accent">WWDC cycle.</span></h1>
+  <p class="dek">This month's issue covers the OS 27 line-up, visionOS 27's spatial overhaul, and the Xcode 27 and Swift 6.3 releases for developers. Two parts: Features, for what changed on-device, and Tech, for what changed in the toolchain.</p>
+  <div class="hero-meta">
+    <span><span class="dot"></span>iOS · macOS · iPadOS · visionOS · watchOS 27</span>
+    <span><span class="dot"></span>Xcode 27</span>
+    <span><span class="dot"></span>Swift 6.3</span>
+  </div>
+
+  <div id="timeline-canvas">
+    <div class="timeline-row">
+      <span style="color:var(--text-faint); width:34px;">2026</span>
+      <div class="timeline-track" id="timelineTrack">
+        <div class="timeline-fill" id="timelineFill"></div>
+        <div class="timeline-node hit" style="left:6%" data-caption="WWDC 2026 keynote — OS 27 line-up and Siri AI unveiled."></div>
+        <div class="timeline-node hit" style="left:28%" data-caption="Xcode 27 beta ships with agentic Plan mode and Device Hub."></div>
+        <div class="timeline-node hit" style="left:52%" data-caption="Swift 6.3 lands: @c interop, module selectors, official Android SDK."></div>
+        <div class="timeline-node" style="left:74%" data-caption="Liquid Glass opt-out window closes — adoption becomes mandatory."></div>
+        <div class="timeline-node" style="left:94%" data-caption="April 2027 — final deadline for Liquid Glass adoption."></div>
+      </div>
+      <span style="color:var(--text-faint); width:34px; text-align:right;">2027</span>
+    </div>
+    <div class="timeline-label"><span>Announced</span><span>Ships</span><span>Deadline</span></div>
+    <div class="timeline-caption" id="timelineCaption">Tap a point on the line above.</div>
+  </div>
+</header>
+
+<div class="part-divider">
+  <p class="part-label">Part one</p>
+  <h2 class="part-title">Features</h2>
+  <p class="part-sub">What's new for people using the devices: the new Siri, Apple Intelligence across apps, and visionOS's spatial rework.</p>
+</div>
+
+<section id="os27">
+  <p class="section-eyebrow">01 — Platform update</p>
+  <h2>Siri gets rebuilt, and Apple Intelligence gets everywhere</h2>
+  <p>The headline of OS 27 is a new Siri, built on foundation models developed jointly with Google (delayed in the EU and China for regulatory reasons). It's less a feature update than a full replacement of how the assistant understands what's on your screen and what you're trying to do.</p>
+
+  <h3>Siri AI, the next generation <span class="tag">all platforms</span></h3>
+  <p class="dim">Five changes worth knowing, expand each for the specifics:</p>
+
+  <details class="disclosure">
+    <summary>Dedicated Siri app <span class="chev">›</span></summary>
+    <div class="body"><p>A standalone hub for every interaction: revisiting past conversations, asking follow-ups, generating text and images, analyzing files, and customizing how Siri sounds and responds.</p></div>
+  </details>
+  <details class="disclosure">
+    <summary>Spotlight integration <span class="chev">›</span></summary>
+    <div class="body"><p>On macOS 27, Spotlight becomes a "Search or Ask" interface, with "Ask Siri" surfaced as the top hit by default.</p></div>
+  </details>
+  <details class="disclosure">
+    <summary>Contextual understanding <span class="chev">›</span></summary>
+    <div class="body"><p>Siri can read on-screen content, work across apps, and act on what a user is currently looking at, rather than needing an explicit command every time.</p></div>
+  </details>
+  <details class="disclosure">
+    <summary>Redesigned interface <span class="chev">›</span></summary>
+    <div class="body"><p>On Dynamic Island iPhones running iOS 27, swiping down from the middle of the screen brings up Siri in a chat-like interface docked at the top.</p></div>
+  </details>
+  <details class="disclosure">
+    <summary>Siri on the wrist, and everywhere else <span class="chev">›</span></summary>
+    <div class="body"><p>watchOS 27 gets a dedicated Siri app for full conversations from the wrist. The same upgraded assistant extends into CarPlay and AirPods, and conversations carry over across devices as you move between them.</p></div>
+  </details>
+
+  <h3>Apple Intelligence, expanded across apps</h3>
+  <div class="feature-grid">
+    <div class="feature-card"><h4>Shortcuts</h4><p>Describe automations in plain language instead of building them block by block.</p></div>
+    <div class="feature-card"><h4>Safari</h4><p>Auto-groups tabs by topic, watches pages for changes, and can build a browser extension from a text description.</p></div>
+    <div class="feature-card"><h4>Passwords</h4><p>Finds and fixes weak or reused passwords automatically, no manual sign-ins required.</p></div>
+    <div class="feature-card"><h4>Photos</h4><p>Better object removal, plus new Extend and Reframe tools; Image Playground's editing model is now more capable and promptable.</p></div>
+    <div class="feature-card"><h4>Phone</h4><p>Surfaces relevant info from other apps in the middle of a call.</p></div>
+    <div class="feature-card"><h4>Liquid Glass</h4><p>A system-wide transparency slider, better text contrast, and sharper app icons across the board.</p></div>
+  </div>
+</section>
+
+<section id="vision">
+  <p class="section-eyebrow">02 — Spatial computing</p>
+  <h2>visionOS 27 stops feeling like a beta</h2>
+  <p>Vision Pro gets the most conceptually different update of the cycle: Siri becomes a placeable object in your space, and windows stop being flat.</p>
+
+  <ul>
+    <li><strong>3D Siri Orb.</strong> Siri appears as a placeable orb you can position anywhere in your space. Looking at it is enough to start a conversation, no "Hey Siri" required.</li>
+    <li><strong>Visual awareness.</strong> Siri can "see what you see," identifying objects in your surroundings and answering questions about them in real time.</li>
+    <li><strong>Panoramas as environments.</strong> Panorama photos convert into immersive spatial environments you can step into, instead of viewing as flat images.</li>
+    <li><strong>Curved app windows.</strong> Safari, Freeform, and Apple TV now wrap content around your field of view rather than sitting as flat rectangles.</li>
+    <li><strong>Safari 3D environments.</strong> A new immersive API lets developers launch users into full 360-degree environments from inside Safari.</li>
+    <li><strong>Glance-to-expand notifications.</strong> Notifications expand automatically when you look at them, cutting down on hand gestures.</li>
+    <li><strong>Spatial Mac preview.</strong> Mac owners can preview and edit 3D models directly in visionOS, with Quick Look now supporting annotations on the models themselves.</li>
+  </ul>
+
+  <p class="dim">New developer APIs worth a look: preconfigured held-object tracking, an IR-LED tracked accessories framework, uncovered screen recording, and the immersive Web Environments API for Safari. <a href="#reading">Details linked below.</a></p>
+</section>
+
+<div class="part-divider">
+  <p class="part-label">Part two</p>
+  <h2 class="part-title">Tech</h2>
+  <p class="part-sub">What's new for building on Apple platforms: the frameworks behind Siri, the Xcode 27 tooling refresh, and everything that changed in Swift 6.3.</p>
+</div>
+
+<section id="devframeworks">
+  <p class="section-eyebrow">03 — Frameworks</p>
+  <h2>The frameworks doing the real work</h2>
+
+  <h3>Foundation Models Framework</h3>
+  <p>Apple's on-device LLM framework got real expansion this cycle.</p>
+  <div class="feature-grid">
+    <div class="feature-card"><h4>Image input</h4><p>A single <code>LanguageModelSession</code> call now reasons over images and text together, instead of text-only.</p></div>
+    <div class="feature-card"><h4>Server-side routing</h4><p>The same Swift API can route a request to third-party models, like Claude or Gemini, instead of Apple's own model.</p></div>
+    <div class="feature-card"><h4>One API, any model</h4><p>A <code>LanguageModel</code> protocol paired with a <code>LanguageModelExecutor</code> means any provider implementing both plugs into the existing session API. No more maintaining separate SDKs per provider.</p></div>
+    <div class="feature-card"><h4>Dynamic Profiles</h4><p>Define multiple model "profiles" in one app, so different agents can handle different sub-tasks instead of one model doing everything.</p></div>
+  </div>
+  <p class="dim">Small Business Program members under 2 million first-time downloads get free access to Apple's cloud-hosted Foundation Models on Private Cloud Compute.</p>
+
+  <h3>Core AI Framework</h3>
+  <p>A lower-level sibling to Foundation Models, for developers who want to bring their own model rather than use Apple's. Notably, this is the same framework running Siri AI itself, making it a rare case of Apple exposing its own internal AI infrastructure.</p>
+  <ul>
+    <li>Deploy custom LLMs or vision models directly on iPhone and Mac hardware.</li>
+    <li>Ahead-of-time compilation for target hardware, keeping local inference fast.</li>
+    <li>A dedicated Instruments template for profiling where inference time actually goes.</li>
+    <li>Python tooling to convert existing PyTorch models to run on Apple silicon without retraining.</li>
+  </ul>
+
+  <h3>App Intents Framework <span class="tag">SiriKit deprecated</span></h3>
+  <p>App Intents, the framework behind how apps expose actions to Siri, Shortcuts, Spotlight, and Widgets, got a significant refresh. Apple has formally deprecated SiriKit in its favor.</p>
+  <ul>
+    <li><strong>ValueRepresentation and RelevantEntities</strong> let app content carry structured data across apps, making it more discoverable by Siri.</li>
+    <li><strong>EntityCollection and SyncableEntity</strong> improve performance for large entity sets and keep entities synced across a user's devices.</li>
+    <li><strong>Richer parameter types</strong> add union values, plus graceful cancellation for intents running longer than 30 seconds.</li>
+    <li><strong>ExecutionTargets</strong> gives explicit control over which process (main app, extension, or WidgetKit) handles a given intent.</li>
+  </ul>
+</section>
+
+<section id="xcode">
+  <p class="section-eyebrow">04 — Tooling</p>
+  <h2>Xcode 27: agents get a real seat at the table</h2>
+  <p>Currently in beta, Apple silicon only, and using around 30% less storage than the previous version.</p>
+
+  <h3>Coding agents get more capable</h3>
+  <p>Agent conversations now open directly alongside code, and multiple conversations can be organized more easily. The standout addition is Plan mode:</p>
+
+  <div class="code-card">
+    <div class="code-head"><span>xcode agent prompt</span><button class="copy-btn" data-copy="/plan Add a new API call to the profile screen">Copy</button></div>
+    <pre><code><span class="tok-com">// invoke plan mode before any changes are made</span>
+<span class="tok-mod">/plan</span> Add a new API call to the profile screen</code></pre>
+  </div>
+  <p>The agent explores the related code first and proposes which files and changes are needed. You review and refine the plan before asking it to execute. Xcode 27 also ships built-in specialist skills for SwiftUI, accessibility, sizing, testing, and performance, giving agents more context on Apple-platform code specifically.</p>
+
+  <h3>Untitled Projects</h3>
+  <p>Write, build, and run code without setting up a project, targets, or build settings first, useful for quickly trying an idea or testing an API. Work saves automatically and can later convert into a full Xcode project.</p>
+
+  <h3>AI-powered localization</h3>
+  <p>Ask an agent to translate an app into a new language and it adds the language, updates String Catalogs, and generates translations using the app's own context. You review and refine the results directly in Xcode.</p>
+
+  <div class="feature-grid">
+    <div class="feature-card"><h4>Themes, expanded</h4><p>Custom themes now cover the navigator, inspectors, toolbars, and tab bars, with settings synced through iCloud.</p></div>
+    <div class="feature-card"><h4>Device Hub</h4><p>Physical devices and simulators live in one place, replacing the standalone Simulator app. Toggle appearance, text size, accessibility, location, and audio conditions on the fly.</p></div>
+    <div class="feature-card"><h4>Instruments &amp; Organizer</h4><p>Easier to find and compare performance issues; Organizer adds new post-release metrics and recommendations.</p></div>
+    <div class="feature-card"><h4>Xcode Cloud</h4><p>Builds are up to 2x faster, cutting down build-and-test turnaround.</p></div>
+  </div>
+
+  <p class="dim">Quality-of-life note: Xcode 27 adds a native "Delete Derived Data" option straight in the Product menu, no more digging through Finder or Terminal.</p>
+</section>
+
+<section id="swift">
+  <p class="section-eyebrow">05 — Language</p>
+  <h2>Swift 6.3: making Swift useful in more places</h2>
+  <p>Swift 6.2 was about making concurrency feel natural. 6.3 is about reach: better C interop, one unified build system taking shape, and an official SDK for Android.</p>
+
+  <h3>Talking to C got a lot easier</h3>
+  <p>The standout change is <code>@c</code>. Annotating a Swift function or enum with it auto-generates the matching C header declaration:</p>
+
+  <div class="code-card">
+    <div class="code-head"><span>Swift → generated C header</span><button class="copy-btn" data-copy="@c
+enum status: CInt { case success, failure }
+
+@c
+func callFromC() { ... }">Copy</button></div>
+    <pre><code><span class="tok-mod">@c</span>
+<span class="tok-kw">enum</span> <span class="tok-type">status</span>: CInt { <span class="tok-kw">case</span> success, failure }
+
+<span class="tok-mod">@c</span>
+<span class="tok-kw">func</span> <span class="tok-fn">callFromC</span>() { ... }
+
+<span class="tok-com">// Generated header</span>
+<span class="tok-kw">typedef enum</span> { statusSuccess, statusFailure } status;
+<span class="tok-kw">void</span> callFromC(<span class="tok-kw">void</span>);</code></pre>
+  </div>
+  <p>Pair it with <code>@implementation</code> to write the actual implementation of a function already declared in a C header, directly in Swift. Full detail in <a href="https://github.com/swiftlang/swift-evolution" target="_blank" rel="noopener">SE-0495</a>.</p>
+
+  <h3>Two modules, same function name, no more headache</h3>
+  <p>Module selector syntax lets you disambiguate identically-named symbols from two imports, without renaming or aliasing anything:</p>
+
+  <div class="selector-demo">
+    <div class="selector-buttons">
+      <button class="sel-btn active" data-mod="A">ModuleA::getValue()</button>
+      <button class="sel-btn" data-mod="B">ModuleB::getValue()</button>
+    </div>
+    <div class="code-card" style="margin:0;">
+      <pre><code><span class="tok-kw">import</span> ModuleA
+<span class="tok-kw">import</span> ModuleB
+
+<span class="tok-kw">let</span> x = <span class="tok-mod">ModuleA</span>::<span class="tok-fn">getValue</span>()
+<span class="tok-kw">let</span> y = <span class="tok-mod">ModuleB</span>::<span class="tok-fn">getValue</span>()</code></pre>
+    </div>
+    <div class="selector-output" id="selectorOutput">→ resolves to <span class="val">ModuleA.getValue()</span>, no ambiguity error, no import restructuring.</div>
+  </div>
+  <p class="dim">Deeper dive in <a href="https://github.com/swiftlang/swift-evolution" target="_blank" rel="noopener">SE-0491</a>, the module selectors proposal.</p>
+
+  <h3>For library authors</h3>
+  <ul>
+    <li><strong><code>@specialize</code></strong> ships a pre-specialized implementation of a generic function for specific concrete types, so callers get the specialized codepath without the compiler inferring it at each call site.</li>
+    <li><strong><code>@inline(always)</code></strong> forces inlining at call sites instead of leaving it to the optimizer.</li>
+    <li><strong><code>@export(implementation)</code></strong>, in an ABI-stable library, exposes the actual function body (not just the interface) to clients, unlocking cross-module optimizations previously blocked by the ABI boundary.</li>
+  </ul>
+
+  <h3>Android becomes a first-class target</h3>
+  <p>Swift now has an official, stable SDK for Android. Build native Android binaries, use existing Swift packages on Android, and call Swift directly from Kotlin or Java. This came out of a dedicated Android Workgroup, worth a proper look if you've been eyeing shared code between iOS and Android.</p>
+
+  <h3>One build system, eventually</h3>
+  <p>Xcode's build system, SPM's native planner, and platform-specific quirks on Linux and Windows have long done things their own way. Swift 6.3 previews Swift Build, a single build engine meant to work consistently across macOS, Linux, and Windows. It's opt-in for now, and the native build system stays default:</p>
+
+  <div class="code-card">
+    <div class="code-head"><span>terminal</span><button class="copy-btn" data-copy="swift build --build-system swiftbuild
+swift test --build-system swiftbuild
+swift run --build-system swiftbuild MyExecutable">Copy</button></div>
+    <pre><code>swift build --build-system swiftbuild
+swift test --build-system swiftbuild
+swift run --build-system swiftbuild MyExecutable</code></pre>
+  </div>
+
+  <p class="dim">Smaller SPM additions: shared macro libraries can use prebuilt swift-syntax binaries for faster macro-heavy builds; <code>swift package show-traits</code> shows a package's supported traits without digging through its manifest; doc generation plugins now give more control over pulling in inherited docs.</p>
+
+  <h3>Embedded Swift and WebAssembly, steadier</h3>
+  <p>A batch of Embedded Swift fixes that had sat in nightly builds for months finally landed officially, including <code>description</code> and <code>debugDescription</code> support for floating point types, smoother C interop, and a new opt-in <code>EmbeddedRestrictions</code> warning group that catches unsupported code before the build fails. WebAssembly support, official since 6.2, gets continued toolchain fixes, better JS interop, improved WasmKit debugging, and an Embedded Swift variant of the Wasm SDK for smaller binaries.</p>
+</section>
+
+<section id="breaking">
+  <p class="section-eyebrow">06 — Migration</p>
+  <h2>What changed for developers</h2>
+  <p>The deadlines and deprecations that actually affect a shipping app. Check off what you've handled.</p>
+
+  <div class="checklist" id="checklist">
+    <p class="checklist-title">⚠ Breaking changes and deadlines</p>
+    <div class="check-item" data-key="lg">
+      <div class="checkbox"></div>
+      <div class="check-text">Liquid Glass opt-out window is closed. Deadline: <strong>April 2027</strong>.</div>
+    </div>
+    <div class="check-item" data-key="siri">
+      <div class="checkbox"></div>
+      <div class="check-text">SiriKit deprecated for App Intents. iOS 27 apps still on SiriKit won't be discoverable by the new Siri, or usable in multi-app workflows.</div>
+    </div>
+    <div class="check-item" data-key="scene">
+      <div class="checkbox"></div>
+      <div class="check-text">UIScene / UISceneDelegate adoption and launch screens are now mandatory, which also affects push notification behavior.</div>
+    </div>
+    <div class="check-item" data-key="odr">
+      <div class="checkbox"></div>
+      <div class="check-text">On Demand Resources is being replaced by Background Assets. Plan the migration.</div>
+    </div>
+    <div class="check-item" data-key="metrickit">
+      <div class="checkbox"></div>
+      <div class="check-text">MetricKit is being replaced by MetricManager. Plan the migration.</div>
+    </div>
+    <div class="check-item" data-key="intel">
+      <div class="checkbox"></div>
+      <div class="check-text">macOS 27 (Golden Gate) drops support for Intel-based Macs.</div>
+    </div>
+    <div class="check-item" data-key="watch">
+      <div class="checkbox"></div>
+      <div class="check-text">watchOS 27 drops Apple Watch Ultra (1st gen), SE (2nd gen), and Series 8 or older.</div>
+    </div>
+    <div class="check-progress" id="checkProgress">0 of 7 handled</div>
+  </div>
+</section>
+
+<section id="reading">
+  <p class="section-eyebrow">07 — Worth your time</p>
+  <h2>Further reading</h2>
+
+  <a class="read-item" href="#" onclick="return false;">
+    <span class="rt">Apple didn't announce a foldable iPhone, but iOS 27's code did</span>
+    <span class="rd">Framework strings in the iOS 27 beta point to fold states, screen angles, and multi-display support, tying into the broader push toward adaptive layouts and mandatory UIScene adoption.</span>
+  </a>
+  <a class="read-item" href="#" onclick="return false;">
+    <span class="rt">iOS 27's breaking changes for developers</span>
+    <span class="rd">Mandatory launch screens, scene-based lifecycle adoption, breaking @State updates, and the ODR-to-Background-Assets and MetricKit-to-MetricManager deprecations, in full.</span>
+  </a>
+  <a class="read-item" href="#" onclick="return false;">
+    <span class="rt">Apple opened the Foundation Models Framework to any LLM provider</span>
+    <span class="rd">How the LanguageModel protocol and LanguageModelExecutor let third-party models plug into the same session API Apple's own model uses.</span>
+  </a>
+  <a class="read-item" href="#" onclick="return false;">
+    <span class="rt">Apple's Core AI Framework, explained</span>
+    <span class="rd">The lower-level framework powering Siri itself, now available for developers bringing their own on-device models.</span>
+  </a>
+  <a class="read-item" href="#" onclick="return false;">
+    <span class="rt">What's new in visionOS 27 for spatial devs</span>
+    <span class="rd">Held-object tracking, IR-LED accessory tracking, uncovered screen recording, and the immersive Web Environments API for Safari.</span>
+  </a>
+  <a class="read-item" href="#" onclick="return false;">
+    <span class="rt">Getting started with Swift SDKs for WebAssembly</span>
+    <span class="rd">The official Swift.org walkthrough: swiftly, SDK install, and the Embedded Swift variant for constrained environments.</span>
+  </a>
+</section>
+
+<footer>
+  <p>September 2026 issue — an engineering newsletter. Sources: Apple developer documentation, WWDC 2026 sessions, Swift.org, swift-evolution.</p>
+</footer>
+
+<script>
+(function () {
+  const progress = document.getElementById('progress');
+  function updateProgress() {
+    const h = document.documentElement;
+    const scrolled = h.scrollTop;
+    const height = h.scrollHeight - h.clientHeight;
+    progress.style.width = height > 0 ? (scrolled / height * 100) + '%' : '0%';
+  }
+  document.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+
+  const sections = document.querySelectorAll('section[id]');
+  const navButtons = document.querySelectorAll('.nav-btn');
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navButtons.forEach(b => b.classList.toggle('active', b.dataset.target === entry.target.id));
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+  sections.forEach(s => io.observe(s));
+
+  const nodes = document.querySelectorAll('.timeline-node');
+  const caption = document.getElementById('timelineCaption');
+  const fill = document.getElementById('timelineFill');
+  nodes.forEach(node => {
+    node.addEventListener('click', () => {
+      caption.textContent = node.dataset.caption;
+      const left = node.style.left;
+      fill.style.width = left;
+      nodes.forEach(n => n.classList.remove('hit'));
+      nodes.forEach(n => {
+        const pct = parseFloat(n.style.left);
+        const activePct = parseFloat(left);
+        if (pct <= activePct) n.classList.add('hit');
+      });
+    });
+  });
+
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const text = btn.dataset.copy;
+      try {
+        await navigator.clipboard.writeText(text);
+        const original = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1600);
+      } catch (e) {
+        btn.textContent = 'Select & copy';
+      }
+    });
+  });
+
+  const selBtns = document.querySelectorAll('.sel-btn');
+  const selOutput = document.getElementById('selectorOutput');
+  selBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const mod = btn.dataset.mod;
+      selOutput.innerHTML = mod === 'A'
+        ? '→ resolves to <span class="val">ModuleA.getValue()</span>, no ambiguity error, no import restructuring.'
+        : '→ resolves to <span class="val">ModuleB.getValue()</span>, no ambiguity error, no import restructuring.';
+    });
+  });
+
+  const items = document.querySelectorAll('.check-item');
+  const checkProgress = document.getElementById('checkProgress');
+  function updateCheckProgress() {
+    const done = document.querySelectorAll('.check-item.done').length;
+    checkProgress.textContent = done + ' of ' + items.length + ' handled';
+  }
+  items.forEach(item => {
+    item.addEventListener('click', () => {
+      item.classList.toggle('done');
+      item.querySelector('.checkbox').classList.toggle('done');
+      updateCheckProgress();
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
